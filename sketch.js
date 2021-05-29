@@ -71,10 +71,10 @@ let material = new MeshPhongMaterial({
 // Geometry
 
 let minimumThickness = 0.8, // millimeters. Minimum required for metal casting
-    innerRadius = 17.6 / 2, // millimeters. Just my size! TODO: make it GUI-parametric
-    radialSegments = 14,
+    innerRadius = 18 / 2, // millimeters. Just my size! TODO: make it GUI-parametric
+    radialSegments = 10,
     thetaLength = Math.PI * 2,
-    thetaOffset = ((Math.PI * 2) * 0.13).toFixed(2),
+    thetaOffset = ((Math.PI * 2) * 0.17).toFixed(2),
     width = 7;
 
 let getOuterRadius = (innerRadius, minimumThickness, radialSegments) => {
@@ -83,6 +83,7 @@ let getOuterRadius = (innerRadius, minimumThickness, radialSegments) => {
         outerRadiusWithoutThetaOffset = (innerRadius + minimumThickness) / Math.cos(angleBetween2Vertices / 2),
         outerRadiusWithThetaOffset = outerRadiusWithoutThetaOffset / Math.cos(thetaOffset / 2),
         thickness = outerRadiusWithThetaOffset - innerRadius;
+        console.log(thickness);
     return outerRadiusWithThetaOffset;
 };
 let outerRadius = getOuterRadius(innerRadius, minimumThickness, radialSegments);

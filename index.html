@@ -10,7 +10,32 @@
 <body>  
 	<script type="module" src="sketch.js"></script>
 	<canvas id="canvas"></canvas>
-        <button id="exportBinary">Download STL</button>
+        <section class="gui">
+            <h1>Inputs</h1>
+            <form class="table">
+                <div class="table-row">
+                    <label class="table-cell" for="radius">Finger radius:</label>
+                    <input class="table-cell" type="range" id="radius" name="radius" min="10" max="25">
+                </div>
+                <div class="table-row">
+                    <label class="table-cell" for="radialSegments">Radial segments:</label>    
+                    <input class="table-cell" type="range" id="radialSegments" name="radialSegments" min="10" max="25">
+                </div>
+                <div class="table-row">
+                    <label class="table-cell" for="twistAngle">Twist angle:</label>    
+                    <input class="table-cell" type="range" id="twistAngle" name="twistAngle" min="0" max="300">
+                </div>                
+                <div class="table-row">
+                    <label class="table-cell" for="width">Width:</label>    
+                    <input class="table-cell" type="range" id="width" name="width" min="1" max="15">
+                </div>
+                <div class="table-row">
+                    <label class="table-cell" >Thickness:</label>  
+                </div>
+            </form>
+            <button id="exportBinary">Download STL</button>
+        </section>
+        
 </body>
 
 </html>

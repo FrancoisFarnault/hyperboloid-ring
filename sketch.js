@@ -4,7 +4,6 @@ import {
   Scene,
   Color,
   MeshPhongMaterial,
-  DoubleSide,
   Mesh,
   AmbientLight,
   DirectionalLight,
@@ -12,18 +11,20 @@ import {
   Group
 } from 'https://unpkg.com/three@0.127.0/build/three.module.js';
 
-import {CylinderGeometry} from './CylinderGeometry.js';
+import {HyperboloidRing} from './HyperboloidRing.js';
 import {OrbitControls} from './jsm/controls/OrbitControls.js';
 import {STLExporter} from './jsm/exporters/STLExporter.js';
 import {CSG} from './jsm/threejs_csg/CSG.js';
 
 let rotating = true;
-
+let canvas = document.querySelector('#canvas'),
+    canvasWidth = canvas.clientWidth, 
+    canvasHeight = canvas.clientHeight;
 
 // camera
 
 let fov = 75,
-    aspectRatio = window.innerWidth / window.innerHeight,
+    aspectRatio = canvasWidth / canvasHeight,
     near = 0.1,
     far = 500;
 let camera = new PerspectiveCamera( fov, aspectRatio, near, far);
@@ -63,65 +64,30 @@ scene.add(lightHolder);
 let material = new MeshPhongMaterial({
     color: 0xf7f3f0,
     flatShading: true,
-    side: DoubleSide,
     shininess: 150
 });
 
 
-// Geometry
+// Mesh
 
-let minimumThickness = 0.8, // millimeters. Minimum required for metal casting
-    innerRadius = 18 / 2, // millimeters. Just my size! TODO: make it GUI-parametric
+let fingerRadius = 18 / 2, 
     radialSegments = 10,
-    thetaLength = Math.PI * 2,
-    thetaOffset = ((Math.PI * 2) * 0.17).toFixed(2),
+    twistAngle = ((Math.PI * 2) * 0.17).toFixed(2),
     width = 7;
 
-let getOuterRadius = (innerRadius, minimumThickness, radialSegments) => {
-    let thetaLength = Math.PI * 2,
-        angleBetween2Vertices = thetaLength / radialSegments,
-        outerRadiusWithoutThetaOffset = (innerRadius + minimumThickness) / Math.cos(angleBetween2Vertices / 2),
-        outerRadiusWithThetaOffset = outerRadiusWithoutThetaOffset / Math.cos(thetaOffset / 2),
-        thickness = outerRadiusWithThetaOffset - innerRadius;
-        console.log(thickness);
-    return outerRadiusWithThetaOffset;
-};
-let outerRadius = getOuterRadius(innerRadius, minimumThickness, radialSegments);
-
-const hyperboloidGeometry = new CylinderGeometry(outerRadius, outerRadius, width, radialSegments, thetaOffset);
-
-let holeRadius = innerRadius,
-  holeRadialSegments = 200,
-  holeHeight = 20;
-
-const holeGeometry = new CylinderGeometry(holeRadius, holeRadius, holeHeight, holeRadialSegments);
-
-
-// CSG mesh
-
-let meshA = new Mesh(hyperboloidGeometry, material);
-let meshB = new Mesh(holeGeometry, material);
-
-let csg = new CSG();
-
-csg.subtract([meshA, meshB]);
-
-let mesh = csg.toMesh();
-
+let myHyperboloidRing = new HyperboloidRing (fingerRadius, radialSegments, twistAngle, width, material);
+let mesh = myHyperboloidRing.getMesh();
 scene.add(mesh);   
 let nonRotatedMesh = mesh.clone();
 
 
-
 // renderer
-
-let canvas = document.querySelector('#canvas');
 
 let renderer = new WebGLRenderer({
     canvas,
     antialias: true
   });
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(canvasWidth, canvasHeight);
 
 
 // Orbit Controls

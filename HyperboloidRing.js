@@ -22,10 +22,10 @@ class HyperboloidRing {
         this.holeWidth = width + 1,
         this.mesh;
         
-        this.initialize(this.fingerRadius, this.minimumThickness, this.radialSegments, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
+        this.setMesh(this.fingerRadius, this.minimumThickness, this.radialSegments, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
     }
     
-    initialize(fingerRadius, minimumThickness, radialSegments, thetaLength, twistAngle, width, holeWidth, holeRadialSegments, material){
+    setMesh(fingerRadius, minimumThickness, radialSegments, thetaLength, twistAngle, width, holeWidth, holeRadialSegments, material){
         let outerRadius = this.calculateOuterRadius(fingerRadius, minimumThickness, radialSegments, thetaLength, twistAngle);
         
         this.setThickness(outerRadius, fingerRadius);
@@ -63,6 +63,31 @@ class HyperboloidRing {
     
     getThickness(){
         return this.thickness;
+    }
+    
+    setFingerRadius(value){
+        this.fingerRadius = value;
+        this.setMesh(value, this.minimumThickness, this.radialSegments, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
+    }
+    
+    getFingerDiameter(){
+        return this.fingerRadius * 2;
+    }
+    
+    setRadialSegments(value){
+        this.radialSegments = value;
+        this.setMesh(this.fingerRadius, this.minimumThickness, value, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
+    }
+    
+    setTwistAngle(value){
+        this.twistAngle = value;
+        this.setMesh(this.fingerRadius, this.minimumThickness, this.radialSegments, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
+    }
+    
+    setWidth(value){
+        this.width = value;
+        this.holeWidth = value + 1;
+        this.setMesh(this.fingerRadius, this.minimumThickness, this.radialSegments, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
     }
 }
 

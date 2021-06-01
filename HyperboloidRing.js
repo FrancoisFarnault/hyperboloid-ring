@@ -62,16 +62,12 @@ class HyperboloidRing {
     }
     
     getThickness(){
-        return this.thickness;
+        return this.thickness.toFixed(2);
     }
     
     setFingerRadius(value){
         this.fingerRadius = value;
         this.setMesh(value, this.minimumThickness, this.radialSegments, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
-    }
-    
-    getFingerDiameter(){
-        return this.fingerRadius * 2;
     }
     
     setRadialSegments(value){

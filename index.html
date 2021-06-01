@@ -14,23 +14,23 @@
             <h1>Inputs</h1>
             <form class="table">
                 <div class="table-row">
-                    <label class="table-cell" for="fingerDiameter">Finger diameter:</label>
-                    <input class="table-cell" type="range" id="fingerDiameter" name="fingerDiameter" min="10" max="25" value="18">
+                    <label class="table-cell" for="fingerDiameter">Finger diameter: <span class="fingerDiameterLabel"></span></label>
+                    <input class="table-cell" type="range" id="fingerDiameter" name="fingerDiameter" min="100" max="250" value="180">
                 </div>
                 <div class="table-row">
-                    <label class="table-cell" for="radialSegments">Radial segments:</label>    
-                    <input class="table-cell" type="range" id="radialSegments" name="radialSegments" min="10" max="25" value="12">
+                    <label class="table-cell" for="radialSegments">Radial segments: <span class="radialSegmentsLabel"></span></label>    
+                    <input class="table-cell" type="range" id="radialSegments" name="radialSegments" min="10" max="20" value="12">
                 </div>
                 <div class="table-row">
-                    <label class="table-cell" for="twistAngle">Twist angle:</label>    
+                    <label class="table-cell" for="twistAngle">Twist angle: <span class="twistAngleLabel"></span></label>    
                     <input class="table-cell" type="range" id="twistAngle" name="twistAngle" min="0" max="300" value="170">
                 </div>                
                 <div class="table-row">
-                    <label class="table-cell" for="ringWidth">Width:</label>    
+                    <label class="table-cell" for="ringWidth">Width: <span class="ringWidthLabel"></span></label>    
                     <input class="table-cell" type="range" id="ringWidth" name="ringWidth" min="10" max="150" value = "70">
                 </div>
                 <div class="table-row">
-                    <label class="table-cell" >Thickness:</label>  
+                    <label class="table-cell" >Thickness: <span class="ringThicknessLabel"></span></label>  
                 </div>
             </form>
             <button id="exportBinary">Download STL</button>

@@ -25,6 +25,17 @@ let fingerRadius,
     ringWidth;
 let myHyperboloidRing;
 
+let fingerDiameterInput = document.getElementById('fingerDiameter'),
+    radialSegmentsInput = document.getElementById('radialSegments'),
+    twistAngleInput = document.getElementById('twistAngle'),
+    ringWidthInput = document.getElementById('ringWidth');
+
+let fingerDiameterLabel = document.querySelector('.fingerDiameterLabel'),
+    radialSegmentsLabel = document.querySelector('.radialSegmentsLabel'),
+    twistAngleLabel = document.querySelector('.twistAngleLabel'),
+    ringWidthLabel = document.querySelector('.ringWidthLabel'),
+    ringThicknessLabel = document.querySelector('.ringThicknessLabel');
+
 
 let initialize = () => {
     let canvas = document.querySelector('#canvas'),
@@ -75,6 +86,10 @@ let initialize = () => {
 
     // 
     
+    initializeLabels();
+    
+    //
+    
     setMesh();
 
     // 
@@ -112,45 +127,58 @@ let setScene = () => {
 };
 
 let setHyperboloidRingInputParameters = () => {
-    let fingerDiameterInput = document.getElementById('fingerDiameter'),
-        radialSegmentsInput = document.getElementById('radialSegments'),
-        twistAngleInput = document.getElementById('twistAngle'),
-        ringWidthInput = document.getElementById('ringWidth');
-    
-    
-    // set input listeners
     
     fingerDiameterInput.addEventListener('input', () => {
-        myHyperboloidRing.setFingerRadius(fingerDiameterInput.value / 2);
-        // let value = myHyperboloidRing.getFingerDiameter(); todo: make it visible on the label
+        let value = fingerDiameterInput.value / 10;
+        myHyperboloidRing.setFingerRadius(value / 2);
+        fingerDiameterLabel.innerHTML = value.toFixed(2);
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
         refresh();
+        printRotation();
     });
     radialSegmentsInput.addEventListener('input', () => {
         myHyperboloidRing.setRadialSegments(radialSegmentsInput.value);
+        radialSegmentsLabel.innerHTML = radialSegmentsInput.value;
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
         refresh();
     });
     twistAngleInput.addEventListener('input', () => {
-        myHyperboloidRing.setTwistAngle(Math.PI * 2 * (twistAngleInput.value / 1000).toFixed(2));
+        myHyperboloidRing.setTwistAngle((Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2));
+        twistAngleLabel.innerHTML = (Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2);
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
         refresh();
     });    
     ringWidthInput.addEventListener('input', () => {
         myHyperboloidRing.setWidth(ringWidthInput.value / 10);
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        ringWidthLabel.innerHTML = ringWidthInput.value / 10;
         refresh();
     });
     
     // initialize input parameters
     
-    fingerRadius = fingerDiameterInput.value / 2;
+    fingerRadius = (fingerDiameterInput.value / 10) / 2; 
     radialSegments = radialSegmentsInput.value;
     twistAngle = (Math.PI * 2) * (twistAngleInput.value / 1000);
     ringWidth = ringWidthInput.value / 10;
-    
+   
+};
+
+let initializeLabels = () => {
+    fingerDiameterLabel.innerHTML = fingerDiameterInput.value / 10;
+    radialSegmentsLabel.innerHTML = radialSegmentsInput.value;
+    twistAngleLabel.innerHTML = (Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2);
+    ringWidthLabel.innerHTML = ringWidthInput.value / 10;
+    ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();   
 };
 
 
 let refresh = () => {
+    let rotationX = mesh.rotation.x,
+        rotationZ = mesh.rotation.z;
     setMesh();
-    // todo here: give the new mesh the previous 3D position 
+    mesh.rotation.x = rotationX;
+    mesh.rotation.z = rotationZ;
     setScene();   
 };
 
@@ -170,6 +198,7 @@ let animate = () => {
     requestAnimationFrame(animate);
     lightHolder.quaternion.copy(camera.quaternion); // prevents lights from rotating with orbit control
 };
+
 
 
 let exportBinary = () => {

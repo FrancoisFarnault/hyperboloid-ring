@@ -12,7 +12,9 @@ https://francoisfarnault.github.io/hyperboloid-ring/
 
 ## To do:
 
-* A simple GUI to make the ring parametric.
+* Try Dat GUI to see if it improves code readability.
+* Limit the thickness so that an uncomfortable ring can not be printed.
 * Improve rendering quality so that it looks more like gold or silver.
 * Fine tune the mesh generation.
+* Design a bangle version.
 

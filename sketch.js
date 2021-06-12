@@ -3,12 +3,13 @@ import {
   PerspectiveCamera,
   Scene,
   Color,
-  MeshPhongMaterial,
+  MeshStandardMaterial,
   Mesh,
   AmbientLight,
   DirectionalLight,
   HemisphereLight,
-  Group
+  Group,
+  CubeTextureLoader
 } from 'https://unpkg.com/three@0.127.0/build/three.module.js';
 
 import {HyperboloidRing} from './HyperboloidRing.js';
@@ -58,22 +59,35 @@ let initialize = () => {
 
     // 
 
-    let directionaLight = new DirectionalLight( 0xf7f3f0, 0.2 );
-    directionaLight.position.set(-1, 2, 4); // x, y, z
+    let directionalLight = new DirectionalLight( 0xffffff, 0.2 );
+    directionalLight.position.set(-1, 2, 4); // x, y, z
     
-    let hemiLight = new HemisphereLight( 0xf7f3f0, 0.1 );
+    let hemiLight = new HemisphereLight( 0xffffff, 0.1 );
     hemiLight.position.set( 0, 200, 0 ); // x, y, z
 
     lightHolder = new Group();
-    lightHolder.add(directionaLight);
+    lightHolder.add(directionalLight);
     lightHolder.add(hemiLight);
 
     // 
+    
+    let reflectionCube = new CubeTextureLoader()
+    .setPath( './textures/' )
+    .load( [
+            'px.png',
+            'nx.png',
+            'py.png',
+            'ny.png',
+            'pz.png',
+            'nz.png'
+    ] );
 
-    material = new MeshPhongMaterial({
-        color: 0xf7f3f0,
+    material = new MeshStandardMaterial({
+        color: 0xdeae36,
+        envMap : reflectionCube,
         flatShading: true,
-        shininess: 150
+        metalness: 1.0,
+        roughness: 0
     });
     
     // 

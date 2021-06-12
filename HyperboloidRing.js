@@ -20,8 +20,9 @@ class HyperboloidRing {
         this.maximumThickness = 4,
         this.holeRadialSegments = 200,
         this.holeWidth = width + 1,
-        this.mesh;
         
+        this.mesh;
+
         this.setMesh(this.fingerRadius, this.minimumThickness, this.radialSegments, this.thetaLength, this.twistAngle, this.width, this.holeWidth, this.holeRadialSegments, this.material);
     }
     

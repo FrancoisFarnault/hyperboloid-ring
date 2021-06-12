@@ -12,7 +12,9 @@ body {
     width: 30%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    justify-content: space-between;
+    padding-left: 30px;
+    padding-bottom: 10px;
 }
 
 .table {
@@ -46,5 +48,3 @@ button {
 button:hover{
     cursor: pointer;
 }
-
-

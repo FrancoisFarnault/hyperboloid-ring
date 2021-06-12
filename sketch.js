@@ -184,12 +184,14 @@ let setInputListeners = () => {
     });
 };
 
+
 let initializeParametersValues = () => {
     fingerRadius = (fingerDiameterInput.value / 10) / 2; 
     radialSegments = radialSegmentsInput.value;
     twistAngle = (Math.PI * 2) * (twistAngleInput.value / 1000);
     ringWidth = ringWidthInput.value / 10;
 };
+
 
 let initializeLabels = () => {
     fingerDiameterLabel.innerHTML = fingerRadius * 2;

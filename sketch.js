@@ -4,7 +4,6 @@ import {
   Scene,
   Color,
   MeshPhongMaterial,
-  DoubleSide,
   Mesh,
   AmbientLight,
   DirectionalLight,
@@ -12,176 +11,220 @@ import {
   Group
 } from 'https://unpkg.com/three@0.127.0/build/three.module.js';
 
-import {CylinderGeometry} from './CylinderGeometry.js';
+import {HyperboloidRing} from './HyperboloidRing.js';
 import {OrbitControls} from './jsm/controls/OrbitControls.js';
 import {STLExporter} from './jsm/exporters/STLExporter.js';
 import {CSG} from './jsm/threejs_csg/CSG.js';
 
-let rotating = true;
+let isRotating = true; 
+let camera, scene, renderer, exporter, material, mesh, nonRotatedMesh, lightHolder;
+
+let fingerRadius, 
+    radialSegments,
+    twistAngle,
+    ringWidth;
+let myHyperboloidRing;
+
+let fingerDiameterInput = document.getElementById('fingerDiameter'),
+    radialSegmentsInput = document.getElementById('radialSegments'),
+    twistAngleInput = document.getElementById('twistAngle'),
+    ringWidthInput = document.getElementById('ringWidth');
+
+let fingerDiameterLabel = document.querySelector('.fingerDiameterLabel'),
+    radialSegmentsLabel = document.querySelector('.radialSegmentsLabel'),
+    twistAngleLabel = document.querySelector('.twistAngleLabel'),
+    ringWidthLabel = document.querySelector('.ringWidthLabel'),
+    ringThicknessLabel = document.querySelector('.ringThicknessLabel');
 
 
-// camera
+let initialize = () => {
+    let canvas = document.querySelector('#canvas'),
+        canvasWidth = canvas.clientWidth, 
+        canvasHeight = canvas.clientHeight;
 
-let fov = 75,
-    aspectRatio = window.innerWidth / window.innerHeight,
-    near = 0.1,
-    far = 500;
-let camera = new PerspectiveCamera( fov, aspectRatio, near, far);
-camera.position.set( 30, 30, 30 );
+    // 
 
+    let fov = 75,
+        aspectRatio = canvasWidth / canvasHeight,
+        near = 0.1,
+        far = 500;
+    
+    camera = new PerspectiveCamera( fov, aspectRatio, near, far);
+    camera.position.set( 30, 30, 30 );
 
-// scene
+    // 
 
-let scene = new Scene();
-scene.background = new Color("#f7f3f0");
+    exporter = new STLExporter();
 
+    // 
 
-// exporter
+    let directionaLight = new DirectionalLight( 0xf7f3f0, 0.2 );
+    directionaLight.position.set(-1, 2, 4); // x, y, z
+    
+    let hemiLight = new HemisphereLight( 0xf7f3f0, 0.1 );
+    hemiLight.position.set( 0, 200, 0 ); // x, y, z
 
-let exporter = new STLExporter();
+    lightHolder = new Group();
+    lightHolder.add(directionaLight);
+    lightHolder.add(hemiLight);
 
+    // 
 
-// lights
+    material = new MeshPhongMaterial({
+        color: 0xf7f3f0,
+        flatShading: true,
+        shininess: 150
+    });
+    
+    // 
+    
+    setHyperboloidRingInputParameters();
+    
+    // 
+    
+    myHyperboloidRing = new HyperboloidRing (fingerRadius, radialSegments, twistAngle, ringWidth, material);
 
-let color = 0xf7f3f0;
+    // 
+    
+    initializeLabels();
+    
+    //
+    
+    setMesh();
 
-let directionaLight = new DirectionalLight(color, 0.2);
-directionaLight.position.set(-1, 2, 4); // x, y, z
-scene.add(directionaLight);
+    // 
 
-let hemiLight = new HemisphereLight( color, 0.1 );
-hemiLight.position.set( 0, 200, 0 ); // x, y, z
+    renderer = new WebGLRenderer({ 
+        canvas,
+        antialias: true
+      });
+    renderer.setSize(canvasWidth, canvasHeight);
 
-var lightHolder = new Group();
-lightHolder.add(directionaLight);
-lightHolder.add(hemiLight);
-scene.add(lightHolder);
+    // 
 
+    const controls = new OrbitControls( camera, renderer.domElement );
+    controls.target.set( 0, 0, 0 );
+    controls.update();
 
-// material
+    canvas.addEventListener( 'pointerdown', () => { isRotating = false; }, false );
+    canvas.addEventListener( 'pointerup', () => { isRotating = true; }, false );
 
-let material = new MeshPhongMaterial({
-    color: 0xf7f3f0,
-    flatShading: true,
-    side: DoubleSide,
-    shininess: 150
-});
+    // 
 
-
-// Geometry
-
-let minimumThickness = 0.8, // millimeters. Minimum required for metal casting
-    innerRadius = 18 / 2, // millimeters. Just my size! TODO: make it GUI-parametric
-    radialSegments = 10,
-    thetaLength = Math.PI * 2,
-    thetaOffset = ((Math.PI * 2) * 0.17).toFixed(2),
-    width = 7;
-
-let getOuterRadius = (innerRadius, minimumThickness, radialSegments) => {
-    let thetaLength = Math.PI * 2,
-        angleBetween2Vertices = thetaLength / radialSegments,
-        outerRadiusWithoutThetaOffset = (innerRadius + minimumThickness) / Math.cos(angleBetween2Vertices / 2),
-        outerRadiusWithThetaOffset = outerRadiusWithoutThetaOffset / Math.cos(thetaOffset / 2),
-        thickness = outerRadiusWithThetaOffset - innerRadius;
-        console.log(thickness);
-    return outerRadiusWithThetaOffset;
+    let buttonExportBinary = document.getElementById( 'exportBinary' );
+    buttonExportBinary.addEventListener( 'click', exportBinary, false );
+    
+    //
+    
+    setScene();
 };
-let outerRadius = getOuterRadius(innerRadius, minimumThickness, radialSegments);
 
-const hyperboloidGeometry = new CylinderGeometry(outerRadius, outerRadius, width, radialSegments, thetaOffset);
+let setScene = () => {
+    scene = new Scene();
+    scene.background = new Color("#f7f3f0");
+    scene.add(lightHolder);
+    scene.add(mesh);
+};
 
-let holeRadius = innerRadius,
-  holeRadialSegments = 200,
-  holeHeight = 20;
+let setHyperboloidRingInputParameters = () => {
+    
+    fingerDiameterInput.addEventListener('input', () => {
+        let value = fingerDiameterInput.value / 10;
+        myHyperboloidRing.setFingerRadius(value / 2);
+        fingerDiameterLabel.innerHTML = value.toFixed(2);
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        refresh();
+        printRotation();
+    });
+    radialSegmentsInput.addEventListener('input', () => {
+        myHyperboloidRing.setRadialSegments(radialSegmentsInput.value);
+        radialSegmentsLabel.innerHTML = radialSegmentsInput.value;
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        refresh();
+    });
+    twistAngleInput.addEventListener('input', () => {
+        myHyperboloidRing.setTwistAngle((Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2));
+        twistAngleLabel.innerHTML = (Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2);
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        refresh();
+    });    
+    ringWidthInput.addEventListener('input', () => {
+        myHyperboloidRing.setWidth(ringWidthInput.value / 10);
+        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        ringWidthLabel.innerHTML = ringWidthInput.value / 10;
+        refresh();
+    });
+    
+    // initialize input parameters
+    
+    fingerRadius = (fingerDiameterInput.value / 10) / 2; 
+    radialSegments = radialSegmentsInput.value;
+    twistAngle = (Math.PI * 2) * (twistAngleInput.value / 1000);
+    ringWidth = ringWidthInput.value / 10;
+   
+};
 
-const holeGeometry = new CylinderGeometry(holeRadius, holeRadius, holeHeight, holeRadialSegments);
-
-
-// CSG mesh
-
-let meshA = new Mesh(hyperboloidGeometry, material);
-let meshB = new Mesh(holeGeometry, material);
-
-let csg = new CSG();
-
-csg.subtract([meshA, meshB]);
-
-let mesh = csg.toMesh();
-
-scene.add(mesh);   
-let nonRotatedMesh = mesh.clone();
-
-
-
-// renderer
-
-let canvas = document.querySelector('#canvas');
-
-let renderer = new WebGLRenderer({
-    canvas,
-    antialias: true
-  });
-renderer.setSize(window.innerWidth, window.innerHeight);
-
-
-// Orbit Controls
-
-const controls = new OrbitControls( camera, renderer.domElement );
-controls.target.set( 0, 0, 0 );
-controls.update();
-
-canvas.addEventListener( 'pointerdown', () => {
-    rotating = false;
-}, false );
-
-canvas.addEventListener( 'pointerup', () => {
-    rotating = true;
-}, false );
-
-
-// Button export stl
-
-let buttonExportBinary = document.getElementById( 'exportBinary' );
-buttonExportBinary.addEventListener( 'click', exportBinary, false );
+let initializeLabels = () => {
+    fingerDiameterLabel.innerHTML = fingerDiameterInput.value / 10;
+    radialSegmentsLabel.innerHTML = radialSegmentsInput.value;
+    twistAngleLabel.innerHTML = (Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2);
+    ringWidthLabel.innerHTML = ringWidthInput.value / 10;
+    ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();   
+};
 
 
-// Animation
+let refresh = () => {
+    let rotationX = mesh.rotation.x,
+        rotationZ = mesh.rotation.z;
+    setMesh();
+    mesh.rotation.x = rotationX;
+    mesh.rotation.z = rotationZ;
+    setScene();   
+};
+
+
+let setMesh = () => {   
+    mesh = myHyperboloidRing.getMesh();
+    nonRotatedMesh = mesh.clone();
+};
+
 
 let animate = () => {
-    if (rotating) {
+    if (isRotating) {
         mesh.rotation.x += 0.003;
         mesh.rotation.z += 0.006;
     }
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
-    lightHolder.quaternion.copy(camera.quaternion);  
+    lightHolder.quaternion.copy(camera.quaternion); // prevents lights from rotating with orbit control
 };
 
-animate();
 
 
-                                
-function exportBinary() {
+let exportBinary = () => {
     const result = exporter.parse( nonRotatedMesh, { binary: true } );
     saveArrayBuffer( result, 'bague_hyperboloid.stl' );
+};
 
-}
 
 const link = document.createElement( 'a' );
 link.style.display = 'none';
 document.body.appendChild( link );
 
-function save( blob, filename ) {
-
+let save = (blob, filename) =>{
     link.href = URL.createObjectURL( blob );
     link.download = filename;
     link.click();
 
-}
+};
 
-function saveArrayBuffer( buffer, filename ) {
-    
+
+let saveArrayBuffer = (buffer, filename) => { 
     save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
-    
-}
+};
+
+
+initialize();
+animate();
+
 

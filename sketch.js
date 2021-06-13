@@ -9,10 +9,7 @@ import {
   DirectionalLight,
   HemisphereLight,
   Group,
-  CubeTextureLoader,
-  Quaternion,
-  Vector3,
-  Math as ThreeMath
+  CubeTextureLoader
 } from 'https://unpkg.com/three@0.127.0/build/three.module.js';
 
 import {HyperboloidRing} from './HyperboloidRing.js';
@@ -24,17 +21,7 @@ let meshIsRotating;
 
 let camera, scene, renderer, exporter, reflectionCube, material, mesh, nonRotatedMesh, lightsGroup;
 
-let myHyperboloidRing;
-
-let fingerRadius, 
-    radialSegments,
-    twistAngle,
-    ringWidth;
-    
-let fingerDiameterInput,
-    radialSegmentsInput,
-    twistAngleInput,
-    ringWidthInput;
+let ring;
     
 let fingerDiameterLabel,
     radialSegmentsLabel,
@@ -44,27 +31,22 @@ let fingerDiameterLabel,
 
 
 let initialize = () => {
+    
     let canvas = document.querySelector('#canvas'),
         canvasWidth = canvas.clientWidth, 
         canvasHeight = canvas.clientHeight;
 
     // 
-
-    let fov = 75,
-        aspectRatio = canvasWidth / canvasHeight,
-        near = 0.1,
-        far = 500;
-    
-    camera = new PerspectiveCamera( fov, aspectRatio, near, far);
+    camera = new PerspectiveCamera( 75, canvasWidth / canvasHeight, 0.1, 500);
     camera.position.set( 30, 30, 30 );
 
     //
-    
     scene = new Scene();
     scene.background = new Color("#f7f3f0");
     
-    //
-
+    
+    // lights
+    
     let directionalLight = new DirectionalLight( 0xffffff, 0.2 );
     directionalLight.position.set(-1, 2, 4); // x, y, z
     
@@ -77,7 +59,8 @@ let initialize = () => {
     
     scene.add(lightsGroup);
 
-    // 
+
+    // material
     
     reflectionCube = new CubeTextureLoader()
     .setPath( './textures/' )
@@ -88,7 +71,7 @@ let initialize = () => {
             'ny.png',
             'pz.png',
             'nz.png'
-    ] );
+    ]);
 
     material = new MeshStandardMaterial({
         color: 0xdeae36,
@@ -98,40 +81,41 @@ let initialize = () => {
         roughness: 0
     });
     
-    // 
     
-    fingerDiameterInput = document.getElementById('fingerDiameter');
-    radialSegmentsInput = document.getElementById('radialSegments');
-    twistAngleInput = document.getElementById('twistAngle');
-    ringWidthInput = document.getElementById('ringWidth');
+    // ring instantiation
+    
+    let fingerDiameter = 18.4, 
+        radialSegments = 13,
+        twistAngle = 45,
+        ringWidth = 10;
+    
+    ring = new HyperboloidRing (fingerDiameter, radialSegments, twistAngle, ringWidth, material);
 
+
+    //  inputs with labels
+    
+    setInputListeners();
+    
     fingerDiameterLabel = document.querySelector('.fingerDiameterLabel');
     radialSegmentsLabel = document.querySelector('.radialSegmentsLabel');
     twistAngleLabel = document.querySelector('.twistAngleLabel');
     ringWidthLabel = document.querySelector('.ringWidthLabel');
     ringThicknessLabel = document.querySelector('.ringThicknessLabel');
     
-    initializeParametersValues();
-    setInputListeners();
+    fingerDiameterLabel.innerHTML = fingerDiameter;
+    radialSegmentsLabel.innerHTML = radialSegments;
+    twistAngleLabel.innerHTML = twistAngle;
+    ringWidthLabel.innerHTML = ringWidth;  
     
-    //
-    
-    myHyperboloidRing = new HyperboloidRing (fingerRadius, radialSegments, twistAngle, ringWidth, material);
+    setThicknessLabel();
 
-    /** 
-        labels are initialized after myHyperboloidRing instanciation because of the label "thickness".
-        Indeed the thickness can only be calculated after instantiation of the ring  
-    **/
-    initializeLabels(); 
-    
+
     //
-    
     meshIsRotating = true;
     setMesh();
     scene.add(mesh);
 
     // 
-
     renderer = new WebGLRenderer({ 
         canvas,
         antialias: true
@@ -139,7 +123,6 @@ let initialize = () => {
     renderer.setSize(canvasWidth, canvasHeight);
 
     // 
-
     let controls = new OrbitControls( camera, renderer.domElement );
     controls.target.set( 0, 0, 0 );
     controls.update();
@@ -148,7 +131,6 @@ let initialize = () => {
     canvas.addEventListener( 'pointerup', () => { meshIsRotating = true; }, false );
 
     // 
-    
     exporter = new STLExporter();
     
     let buttonExportBinary = document.getElementById( 'exportBinary' );
@@ -156,51 +138,44 @@ let initialize = () => {
 };
 
 
-let setInputListeners = () => {    
+let setInputListeners = () => {   
+    let fingerDiameterInput = document.getElementById('fingerDiameter'),
+        radialSegmentsInput = document.getElementById('radialSegments'),
+        twistAngleInput = document.getElementById('twistAngle'),
+        ringWidthInput = document.getElementById('ringWidth');
+    
     fingerDiameterInput.addEventListener('input', () => {
         let value = fingerDiameterInput.value / 10;
-        myHyperboloidRing.setFingerRadius(value / 2);
-        fingerDiameterLabel.innerHTML = value.toFixed(2);
-        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        ring.setFingerRadiusFromDiameter(value);
+        fingerDiameterLabel.innerHTML = value;
+        setThicknessLabel();
         refreshMesh();
     });
     radialSegmentsInput.addEventListener('input', () => {
-        myHyperboloidRing.setRadialSegments(radialSegmentsInput.value);
-        radialSegmentsLabel.innerHTML = radialSegmentsInput.value;
-        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        let value = radialSegmentsInput.value;
+        ring.setRadialSegments(value);
+        radialSegmentsLabel.innerHTML = value;
+        setThicknessLabel();
         refreshMesh();
     });
     twistAngleInput.addEventListener('input', () => {
-        myHyperboloidRing.setTwistAngle((Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2));
-        twistAngleLabel.innerHTML = (Math.PI * 2 * (twistAngleInput.value / 1000)).toFixed(2);
-        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
+        let value = twistAngleInput.value;
+        ring.setTwistAngle(value);
+        twistAngleLabel.innerHTML = value;
+        setThicknessLabel();
         refreshMesh();
     });    
     ringWidthInput.addEventListener('input', () => {
-        myHyperboloidRing.setWidth(ringWidthInput.value / 10);
-        ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();
-        ringWidthLabel.innerHTML = ringWidthInput.value / 10;
+        let value = ringWidthInput.value / 10;
+        ring.setWidth(value);
+        ringWidthLabel.innerHTML = value;
         refreshMesh();
     });
 };
 
-
-let initializeParametersValues = () => {
-    fingerRadius = (fingerDiameterInput.value / 10) / 2; 
-    radialSegments = radialSegmentsInput.value;
-    twistAngle = (Math.PI * 2) * (twistAngleInput.value / 1000);
-    ringWidth = ringWidthInput.value / 10;
+let setThicknessLabel = () => {
+    ringThicknessLabel.innerHTML = ring.getThickness();
 };
-
-
-let initializeLabels = () => {
-    fingerDiameterLabel.innerHTML = fingerRadius * 2;
-    radialSegmentsLabel.innerHTML = radialSegments;
-    twistAngleLabel.innerHTML = twistAngle.toFixed(2);
-    ringWidthLabel.innerHTML = ringWidth;
-    ringThicknessLabel.innerHTML = myHyperboloidRing.getThickness();   
-};
-
 
 let refreshMesh = () => {
     // keep track of the orientation
@@ -217,13 +192,14 @@ let refreshMesh = () => {
     mesh.rotation.x = rotationX;
     mesh.rotation.z = rotationZ;
 
+    // add updated mesh to scene
     scene.add(mesh);
 };
 
 
 let setMesh = () => {   
-    mesh = myHyperboloidRing.getMesh();
-    nonRotatedMesh = mesh.clone(); // save a non rotated clone for STL export
+    mesh = ring.getMesh();
+    nonRotatedMesh = mesh.clone(); // save a non rotated clone for STL export 
 };
 
 

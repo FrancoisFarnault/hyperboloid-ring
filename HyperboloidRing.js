@@ -37,10 +37,13 @@ class HyperboloidRing {
         let hyperboloidGeometry = new CylinderGeometry(outerRadius, outerRadius, this.width, this.radialSegments, this.twistAngle),
             holeGeometry = new CylinderGeometry(this.fingerRadius, this.fingerRadius, this.holeWidth, this.holeRadialSegments);
     
-        let hyperboloidMesh = new Mesh(hyperboloidGeometry, this.material),
-            holeMesh = new Mesh(holeGeometry, this.material);
+        let hyperboloidMesh = new Mesh(hyperboloidGeometry),
+            holeMesh = new Mesh(holeGeometry);
     
-        this.mesh = this.subtractMeshBFromMeshA(hyperboloidMesh, holeMesh);
+        let mesh = this.subtractMeshBFromMeshA(hyperboloidMesh, holeMesh);
+        mesh.material = this.material;
+        
+        this.mesh  = mesh;
     }
     
     calculateOuterRadius(innerRadius, minimumThickness, radialSegments, thetaLength, twistAngle){

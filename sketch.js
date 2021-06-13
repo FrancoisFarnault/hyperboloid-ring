@@ -5,7 +5,6 @@ import {
   Color,
   MeshStandardMaterial,
   Mesh,
-  AmbientLight,
   DirectionalLight,
   HemisphereLight,
   Group,
@@ -48,10 +47,10 @@ let initialize = () => {
     // lights
     
     let directionalLight = new DirectionalLight( 0xffffff, 0.2 );
-    directionalLight.position.set(-1, 2, 4); // x, y, z
-    
     let hemiLight = new HemisphereLight( 0xffffff, 0.1 );
-    hemiLight.position.set( 0, 200, 0 ); // x, y, z
+   
+    directionalLight.position.set(-1, 2, 4); // x, y, z
+    hemiLight.position.set( 0, 200, 0 ); 
 
     lightsGroup = new Group();
     lightsGroup.add(directionalLight);
@@ -76,6 +75,7 @@ let initialize = () => {
     material = new MeshStandardMaterial({
         color: 0xdeae36,
         envMap : reflectionCube,
+        envMapIntensity: 1.2,
         flatShading: true,
         metalness: 1.0,
         roughness: 0

@@ -48,3 +48,42 @@ button {
 button:hover{
     cursor: pointer;
 }
+
+@media screen and (max-width: 992px) {
+    body {
+        flex-direction: column;
+    }
+    #canvas {
+        width: 100%;
+        height: 60vh;
+    }
+
+    .gui{
+        width: 100%;
+        height: 40vh;
+    }
+    #exportBinary,
+    small{
+        display: none;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    #canvas {
+        height: 50vh;
+    }
+    .gui{
+        height: 50vh;
+    }
+    .table-row{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    .table-row:not(:last-child){
+        height: 60px;
+    }
+    .table-row:last-child{
+        height: 30px;
+    }
+}

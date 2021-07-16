@@ -106,8 +106,7 @@ let initialize = () => {
     radialSegmentsLabel.innerHTML = radialSegments;
     twistAngleLabel.innerHTML = twistAngle;
     ringWidthLabel.innerHTML = ringWidth;  
-    
-    setThicknessLabel();
+    ringThicknessLabel.innerHTML = ring.getThickness();
 
 
     //
@@ -173,9 +172,6 @@ let setInputListeners = () => {
     });
 };
 
-let setThicknessLabel = () => {
-    ringThicknessLabel.innerHTML = ring.getThickness();
-};
 
 let refreshMesh = () => {
     // keep track of the orientation

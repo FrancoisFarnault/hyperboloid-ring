@@ -46,17 +46,17 @@ let initialize = () => {
     
     // lights
     
-    let directionalLight = new DirectionalLight( 0xffffff, 0.2 );
-    let hemiLight = new HemisphereLight( 0xffffff, 0.1 );
-   
-    directionalLight.position.set(-1, 2, 4); // x, y, z
-    hemiLight.position.set( 0, 200, 0 ); 
-
-    lightsGroup = new Group();
-    lightsGroup.add(directionalLight);
-    lightsGroup.add(hemiLight);
-    
-    scene.add(lightsGroup);
+//    let directionalLight = new DirectionalLight( 0xffffff, 0.2 );
+//    let hemiLight = new HemisphereLight( 0xffffff, 0.1 );
+//   
+//    directionalLight.position.set(-1, 2, 4); // x, y, z
+//    hemiLight.position.set( 0, 200, 0 ); 
+//
+//    lightsGroup = new Group();
+//    lightsGroup.add(directionalLight);
+//    lightsGroup.add(hemiLight);
+//    
+//    scene.add(lightsGroup);
 
 
     // material

@@ -18,7 +18,7 @@ import {CSG} from './jsm/threejs_csg/CSG.js';
 
 let meshIsRotating; 
 
-let camera, scene, renderer, exporter, reflectionCube, material, mesh, nonRotatedMesh, lightsGroup;
+let canvas, camera, scene, renderer, exporter, reflectionCube, material, mesh, nonRotatedMesh, lightsGroup;
 
 let ring;
     
@@ -31,12 +31,10 @@ let fingerDiameterLabel,
 
 let initialize = () => {
     
-    let canvas = document.querySelector('#canvas'),
-        canvasWidth = canvas.clientWidth, 
-        canvasHeight = canvas.clientHeight;
+    canvas = document.querySelector('#canvas'),
 
     // 
-    camera = new PerspectiveCamera( 75, canvasWidth / canvasHeight, 0.1, 500);
+    camera = new PerspectiveCamera( 75, canvas.clientWidth / canvas.clientHeight, 0.1, 500);
     camera.position.set( 30, 30, 30 );
 
     //
@@ -119,7 +117,7 @@ let initialize = () => {
         canvas,
         antialias: true
       });
-    renderer.setSize(canvasWidth, canvasHeight);
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
     // 
     let controls = new OrbitControls( camera, renderer.domElement );
@@ -133,11 +131,24 @@ let initialize = () => {
     exporter = new STLExporter();
     
     let buttonExportBinary = document.getElementById( 'exportBinary' );
-    buttonExportBinary.addEventListener( 'click', exportBinary, false );   
+    buttonExportBinary.addEventListener( 'click', exportBinary, false ); 
+    
+    //
+    window.addEventListener( 'resize', onWindowResize );
 };
 
 
-let setInputListeners = () => {   
+function onWindowResize() {
+
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( canvas.clientWidth, canvas.clientHeight );
+}
+
+
+let setInputListeners = () => {  
+    
     let fingerDiameterInput = document.getElementById('fingerDiameter'),
         radialSegmentsInput = document.getElementById('radialSegments'),
         twistAngleInput = document.getElementById('twistAngle'),
@@ -174,6 +185,7 @@ let setInputListeners = () => {
 
 
 let refreshMesh = () => {
+    
     // keep track of the orientation
     let rotationX = mesh.rotation.x,
         rotationZ = mesh.rotation.z;
@@ -194,12 +206,14 @@ let refreshMesh = () => {
 
 
 let setMesh = () => {   
+    
     mesh = ring.getMesh();
     nonRotatedMesh = mesh.clone(); // save a non rotated clone for STL export 
 };
 
 
 let animate = () => {
+    
     if (meshIsRotating) {
         mesh.rotation.x += 0.003;
         mesh.rotation.z += 0.006;
@@ -211,17 +225,20 @@ let animate = () => {
 
 
 let exportBinary = () => {
+    
     let result = exporter.parse( nonRotatedMesh, { binary: true } );
     saveArrayBuffer( result, 'hyperboloid_ring.stl' );
 };
 
 
 let saveArrayBuffer = (buffer, filename) => { 
+    
     save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
 };
 
 
 let save = (blob, filename) =>{
+    
     let link = document.createElement( 'a' );
     link.href = URL.createObjectURL( blob );
     link.download = filename;

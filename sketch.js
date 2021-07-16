@@ -158,21 +158,21 @@ let setInputListeners = () => {
         let value = fingerDiameterInput.value / 10;
         ring.setFingerRadiusFromDiameter(value);
         fingerDiameterLabel.innerHTML = value;
-        setThicknessLabel();
+        ringThicknessLabel.innerHTML = ring.getThickness();
         refreshMesh();
     });
     radialSegmentsInput.addEventListener('input', () => {
         let value = radialSegmentsInput.value;
         ring.setRadialSegments(value);
         radialSegmentsLabel.innerHTML = value;
-        setThicknessLabel();
+        ringThicknessLabel.innerHTML = ring.getThickness();
         refreshMesh();
     });
     twistAngleInput.addEventListener('input', () => {
         let value = twistAngleInput.value;
         ring.setTwistAngle(value);
         twistAngleLabel.innerHTML = value;
-        setThicknessLabel();
+        ringThicknessLabel.innerHTML = ring.getThickness();
         refreshMesh();
     });    
     ringWidthInput.addEventListener('input', () => {
@@ -220,7 +220,7 @@ let animate = () => {
     }
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
-    lightsGroup.quaternion.copy(camera.quaternion); // prevents lights from rotating with orbit control
+//    lightsGroup.quaternion.copy(camera.quaternion); // prevents lights from rotating with orbit control
 };
 
 

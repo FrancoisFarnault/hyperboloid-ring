@@ -69,10 +69,14 @@ button:hover{
 }
 
 @media screen and (max-width: 600px) {
+    h1{
+        display: none;
+    }
     #canvas {
         height: 50vh;
     }
     .gui{
+        padding-top: 30px;
         height: 50vh;
     }
     .table-row{
@@ -81,9 +85,9 @@ button:hover{
         justify-content: space-around;
     }
     .table-row:not(:last-child){
-        height: 60px;
+        height: 50px;
     }
     .table-row:last-child{
-        height: 30px;
+        height: 25px;
     }
 }
